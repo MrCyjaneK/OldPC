@@ -1,0 +1,3 @@
+If you plan to write a blog, bludit is precloned and ready to install.
+
+p.s. github.com/MrCyjaneK/Perfect-Bludit-Theme
