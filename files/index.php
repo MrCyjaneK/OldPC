@@ -14,7 +14,7 @@ $showhidden = 0;
 if ((substr($_SERVER['REMOTE_ADDR'],0,8) == "192.168.")) {
     $showhidden = 1;
     define('MAX_SIZE', 1024 * 1024 * 1024 * 1024); // 1TB
-    define('MAX_FILES_PER_CAPTCHA', -1); // Unlimited (we are localhost lol
+    define('MAX_FILES_PER_CAPTCHA', -1); // Unlimited
 } else {
     define('MAX_SIZE', 100 * 1024 * 1024); // 100mb
     define('MAX_FILES_PER_CAPTCHA', 10); // 10 is ok.
