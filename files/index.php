@@ -6,8 +6,21 @@ if (empty($_SESSION['current_tries']) && empty($_SESSION['v'])) {
     $_SESSION['v'] = true;
 }
 $regex = "/[^a-zA-Z0-9_\- \.\/()]+/";
-define('FM_ROOT_PATH','/opt/shared_files');
-$drives = ['/opt/shared_files/.drives/d2'];
+//define('FM_ROOT_PATH','/opt/shared_files');
+$default = ':D';
+$drives = [
+    ':D' => '/opt/shared_files',
+    ':3' => '/opt/shared_files/.drives/d2'
+];
+if (isset($_GET['drive'])) {
+    $_COOKIE['drive'] = $_GET['drive'];
+}
+if (isset($_COOKIE['drive']) && isset($drives[$_COOKIE['drive']])) {
+    $drive = $_COOKIE['drive'];
+} else {
+    $drive = $default;
+}
+define('FM_ROOT_PATH', $drives[$drive]);
 set_time_limit(0);
 ignore_user_abort(true);
 $showhidden = 0;
@@ -22,19 +35,27 @@ if ((substr($_SERVER['REMOTE_ADDR'],0,8) == "192.168.")) {
 define('SHOWHIDDEN', $showhidden);
 $BEGIN = 'http://';
 $path = $_GET['p'];
-$path = FM_ROOT_PATH."$path";
+if (!file_exists(FM_ROOT_PATH."$path")) {
+    $path = FM_ROOT_PATH.'/.404/readme.txt';
+} else {
+    $path = FM_ROOT_PATH."$path";
+}
 try {
     //$path = str_replace('//','/',$path);
     $path = realpath($path);
-    if ($path === false || empty($path) || empty($_GET['p'])) {
-        header("Location: ".$_SERVER["SCRIPT_NAME"]."?p=/");
+    if (empty($path)) {
+        var_dump($path);
+        die();
+        //$_GET['p'] = '/.404';
+        //$path = realpath(FM_ROOT_PATH.'/.404');
+        //header("Location: ".$_SERVER["SCRIPT_NAME"]."?p=/.404/");
         die();
     }
-    if (substr($path, strlen(FM_ROOT_PATH)) != $_GET['p'] &&
-        '/' != $_GET['p']) {
-        header("Location: ".$_SERVER["SCRIPT_NAME"]."?p=".substr($path, strlen(FM_ROOT_PATH)));
-        die($path);
-    }
+//    if (substr($path, strlen(FM_ROOT_PATH)) != $_GET['p'] &&
+//        '/' != $_GET['p']) {
+//        header("Location: ".$_SERVER["SCRIPT_NAME"]."?p=".substr($path, strlen(FM_ROOT_PATH)));
+//        die($path);
+//    }
 } catch (Exception $e) {
     header("Location: ".$_SERVER["SCRIPT_NAME"]."?p=/");
     die();
@@ -125,6 +146,12 @@ function convert_filesize($bytes, $decimals = 2){
     $factor = floor((strlen($bytes) - 1) / 3);
     return sprintf("%.{$decimals}f", $bytes / pow(1024, $factor)) . @$size[$factor];
 }
+function dcf($bytes) {
+    return convert_filesize($bytes,0);
+}
+function driveinfo($path) {
+    return dcf(disk_total_space($path) - disk_free_space($path)).' of '.dcf(disk_total_space($path));
+}
 function scandirSorted($path) {
     $sortedData = array();
     foreach(scandir($path) as $file) {
@@ -184,6 +211,15 @@ function folderSize ($dir) {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>
     <body>
+        <code><pre>Drive: <b><?php echo $drive ?></b> | Switch: <?php
+$i = 0;
+foreach ($drives as $d => $dr) {
+    if ($i != 0) echo " | ";
+    $i++;
+    ?><a href="<?php echo $_SERVER["SCRIPT_NAME"]."?drive=".urlencode($d)."&p=".urlencode($_GET['p']).""; ?>"><?php echo htmlspecialchars($d); ?></a> (<?php echo driveinfo($dr); ?>)<?php
+}
+?></pre></code>
+        <hr />
         <?php
 if (is_dir($path)) {
     $ign = [];
@@ -197,7 +233,7 @@ if (is_dir($path)) {
         if (in_array($dir,$ign)) continue;
         try {
             if (!@is_dir($path.'/'.$dir) && $key != 0 && false) {
-                ?><a style="float: right;" href="<?php echo $_SERVER["SCRIPT_NAME"]."?p=".urlencode($_GET['p']."/$dir")."&raw=true"; ?>">Download</a><?php
+                ?><a style="float: right;" href="<?php echo $_SERVER["SCRIPT_NAME"]."?raw=true&drive=".urlencode($drive)."&p=".urlencode($_GET['p']."/$dir").""; ?>">Download</a><?php
             } else {
                 ?><p style="float: right;"></p><?php
             }
@@ -208,7 +244,7 @@ if (is_dir($path)) {
         } else {
             $dird = $dir;
         }
-        ?><a style="width:100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; float: left;" href="<?php echo $_SERVER["SCRIPT_NAME"]."?p=".urlencode($_GET['p']."/$dir"); ?>"><?php echo htmlspecialchars(substr(convert_filesize(@folderSize($path.'/'.$dir)).'__________',0,10).'|'.preg_replace($regex, "?", $dird)); ?></a>
+        ?><a style="width:100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; float: left;" href="<?php echo $_SERVER["SCRIPT_NAME"]."?drive=".urlencode($drive)."&p=".urlencode($_GET['p']."/$dir"); ?>"><?php echo htmlspecialchars(substr(convert_filesize(@folderSize($path.'/'.$dir)).'__________',0,10).'|'.preg_replace($regex, "?", $dird)); ?></a>
 <?php
     }
 } else {
@@ -217,10 +253,11 @@ if (is_dir($path)) {
         echo "I'm sorry, but ".htmlspecialchars(basename($path))." is too big, and cannot be displayed. It's size is ".convert_filesize(filesize($path))." and the limit is ".convert_filesize(MAX_SIZE).'.';
     } else if ($_SESSION['current_tries'] >= MAX_FILES_PER_CAPTCHA && MAX_FILES_PER_CAPTCHA != -1) {
         ?><img src="/files/captcha.php?session_name=oldpc_files" alt="Captcha"/>
-<form action="/files/verify.php" method="get"
-><input type="text" name="captcha" />
-<input type="hidden" name="p" value="<?php echo htmlspecialchars($_GET['p']); ?>"/>
-<input type="submit">
+<p>We all hate them, but I want only humans to be able to read my files</p>
+<form action="/files/verify.php" method="get">
+    <input type="text" name="captcha" />
+    <input type="hidden" name="p" value="<?php echo htmlspecialchars($_GET['p']); ?>"/>
+    <input type="submit">
 </form>
 <?php
     } else {
