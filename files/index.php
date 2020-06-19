@@ -7,6 +7,7 @@ if (empty($_SESSION['current_tries']) && empty($_SESSION['v'])) {
 }
 $regex = "/[^a-zA-Z0-9_\- \.\/()]+/";
 define('FM_ROOT_PATH','/opt/shared_files');
+$drives = ['/opt/shared_files/.drives/d2'];
 set_time_limit(0);
 ignore_user_abort(true);
 $showhidden = 0;
@@ -15,7 +16,7 @@ if ((substr($_SERVER['REMOTE_ADDR'],0,8) == "192.168.")) {
     define('MAX_SIZE', 1024 * 1024 * 1024 * 1024); // 1TB
     define('MAX_FILES_PER_CAPTCHA', -1); // Unlimited (we are localhost lol
 } else {
-    define('MAX_SIZE', 5 * 1024 * 1024); // 5mb
+    define('MAX_SIZE', 100 * 1024 * 1024); // 100mb
     define('MAX_FILES_PER_CAPTCHA', 10); // 10 is ok.
 }
 define('SHOWHIDDEN', $showhidden);
@@ -165,6 +166,7 @@ function folderSize ($dir) {
             color: white;
             font-size: 150%;
             margin:20px 20px;
+            font-family: Monospace;
             /* max-width:900px */
         }
         a {
@@ -182,7 +184,7 @@ function folderSize ($dir) {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>
     <body>
-        <pre><code><?php
+        <?php
 if (is_dir($path)) {
     $ign = [];
     foreach (['index.txt','readme.txt','note.txt','notes.txt','changelog.txt'] as $tocheck) {
@@ -217,7 +219,7 @@ if (is_dir($path)) {
         ?><img src="/files/captcha.php?session_name=oldpc_files" alt="Captcha"/>
 <form action="/files/verify.php" method="get"
 ><input type="text" name="captcha" />
-<input type="hidden" name="p" value="<?php htmlspecialchars($_GET['p']); ?>"/>
+<input type="hidden" name="p" value="<?php echo htmlspecialchars($_GET['p']); ?>"/>
 <input type="submit">
 </form>
 <?php
@@ -241,6 +243,6 @@ if (is_dir($path)) {
         ?><a href="<?php echo $_SERVER["SCRIPT_NAME"]."?p=".urlencode($_GET['p'])."&raw=true"; ?>">Download</a><?php
     }
 }
-?><code></pre>
+?>
     </body>
 </html>
