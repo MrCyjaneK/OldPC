@@ -35,8 +35,8 @@ if ((substr($_SERVER['REMOTE_ADDR'],0,8) == "192.168.")) {
     define('MAX_SIZE', 1024 * 1024 * 1024 * 1024); // 1TB
     define('MAX_FILES_PER_CAPTCHA', -1); // Unlimited
 } else {
-    define('MAX_SIZE', 100 * 1024 * 1024); // 100mb
-    define('MAX_FILES_PER_CAPTCHA', 10); // 10 is ok.
+    define('MAX_SIZE', 2048 * 1024 * 1024); // 2GB
+    define('MAX_FILES_PER_CAPTCHA', 5); // 10 is ok.
 }
 define('SHOWHIDDEN', $showhidden);
 $BEGIN = 'http://';
@@ -256,7 +256,7 @@ if ($drive != 'all') {
         $ign = [];
         foreach (['index.txt','readme.txt','note.txt','notes.txt','changelog.txt'] as $tocheck) {
             if (file_exists($path."/$tocheck")) {
-                ?><details><summary><?php echo "~~~~~~~~~~~~~ $tocheck\n"; ?></summary><p><?php echo htmlspecialchars(file_get_contents($path.'/'.$tocheck)); ?></p></details><?php
+                ?><details><summary><?php echo "~~~~~~~~~~~~~ $tocheck\n"; ?></summary><code><pre><?php echo htmlspecialchars(file_get_contents($path.'/'.$tocheck)); ?></pre></code></details><?php
                 $ign[] = $tocheck;
             }
         }
@@ -316,15 +316,15 @@ if ($drive != 'all') {
 } else {
     // All drives
     $c = 0;
+    $ign = [];
     foreach ($drives as $d => $p) {
         if ($d == 'all') continue;
         $path = $p.$_GET['p'];
         if(@!file_exists($path)) continue;
         if (is_dir($path)) {
-            $ign = [];
             foreach (['index.txt','readme.txt','note.txt','notes.txt','changelog.txt'] as $tocheck) {
                 if (file_exists($path."/$tocheck")) {
-                    ?><details><summary><?php echo "~~~~~~~~~~~~~ $tocheck\n"; ?></summary><p><?php echo htmlspecialchars(file_get_contents($path.'/'.$tocheck)); ?></p></details><?php
+                    ?><details><summary><?php echo "~~~~~~~~~~~~~ $tocheck\n"; ?></summary><code><pre><?php echo htmlspecialchars(file_get_contents($path.'/'.$tocheck)); ?></pre></code></details><?php
                     $ign[] = $tocheck;
                 }
             }
@@ -333,11 +333,12 @@ if ($drive != 'all') {
                 if (@is_dir($path.'/'.$dir)) {
                     $drivetouse = 'all';
                     $dird = $dir.'/';
-               } else {
-                   $dird = $dir;
-                   $drivetouse = $d;
-               }
-               ?><a style="color: #<?php echo $drive_color[$d]; ?>;width:100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; float: left;" href="<?php echo $_SERVER["SCRIPT_NAME"]."?drive=".urlencode($drivetouse)."&p=".urlencode(remove_dot_segments($_GET['p']."/$dir")); ?>"><?php echo htmlspecialchars(substr(convert_filesize(@folderSize($path.'/'.$dir)).'__________',0,10).'|'.preg_replace($regex, "?", $dird)); ?></a>
+                } else {
+                    $dird = $dir;
+                    $drivetouse = $d;
+                }
+                $ign[] = $dir;
+                ?><a style="color: #<?php echo $drive_color[$d]; ?>;width:100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; float: left;" href="<?php echo $_SERVER["SCRIPT_NAME"]."?drive=".urlencode($drivetouse)."&p=".urlencode(remove_dot_segments($_GET['p']."/$dir")); ?>"><?php echo htmlspecialchars(substr(convert_filesize(@folderSize($path.'/'.$dir)).'__________',0,10).'|'.preg_replace($regex, "?", $dird)); ?></a>
 <?php
             }
             $c++;
