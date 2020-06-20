@@ -26,7 +26,7 @@
         <pre><code>
 <h2>Temperature</h2>
 <?php echo str_replace("temp1:        "," - ",`sensors | grep " C " `); ?>
-<!--<h2>Network</h2>
+<h2>Network</h2>
 <table style="width:100%"><?php
 foreach (explode("\n",file_get_contents('speedtest')) as $line) {
     $line = preg_replace('/\s+/', ' ', $line);
@@ -48,14 +48,17 @@ foreach (str_replace(" days", "d", str_replace(" hours", "h", str_replace(" minu
     }
     echo "</tr>";
 }
-?></table>-->
+?></table>
 <h2>Disk</h2>
-<table style="width: 100%;"><?php foreach(explode("\n",`df . -h`) as $line) {
+<table style="width: 100%;"><?php foreach(explode("\n",`df / /opt/shared_files/.drives/d2 -h`) as $line) {
     $line = preg_replace('/\s+/', ' ', $line);
     echo "<tr>";
+    $i = 0;
     foreach (explode(' ', $line) as $word) {
+        if ($i === 5) continue;
         if ($word === 'on') continue;
         echo "<td>".$word."</td>";
+        $i++;
     }
     echo "</tr>";
 
