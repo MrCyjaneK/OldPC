@@ -24,7 +24,7 @@ if (isset($_GET['drive'])) {
 if (isset($_COOKIE['drive']) && isset($drives[$_COOKIE['drive']])) {
     $drive = $_COOKIE['drive'];
 } else {
-    $drive = $default;
+    $drive = 'all'; //$default;
 }
 define('FM_ROOT_PATH', $drives[$drive]);
 set_time_limit(0);
@@ -275,7 +275,7 @@ if ($drive != 'all') {
             } else {
                 $dird = $dir;
             }
-            ?><a style="color: #<?php echo $drive_color[$drive]; ?>;width:100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; float: left;" href="<?php echo $_SERVER["SCRIPT_NAME"]."?drive=".urlencode($drive)."&p=".urlencode($_GET['p']."/$dir"); ?>"><?php echo htmlspecialchars(substr(convert_filesize(@folderSize($path.'/'.$dir)).'__________',0,10).'|'.preg_replace($regex, "?", $dird)); ?></a>
+            ?><a style="color: #<?php echo $drive_color[$drive]; ?>;width:100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; float: left;" href="<?php echo $_SERVER["SCRIPT_NAME"]."?drive=".urlencode($drive)."&p=".urlencode(remove_dot_segments($_GET['p']."/$dir")); ?>"><?php echo htmlspecialchars(substr(convert_filesize(@folderSize($path.'/'.$dir)).'__________',0,10).'|'.preg_replace($regex, "?", $dird)); ?></a>
 <?php
         }
     } else {
@@ -306,11 +306,8 @@ if ($drive != 'all') {
             if (in_array(strtolower(substr($path,-4)),['.png','.gif','.jpg','jpeg'])) {
                 ?><a href="<?php echo htmlspecialchars($_SERVER["SCRIPT_NAME"]."?p=".$_GET['p']."&raw=true"); ?>"><img width="100%" src="<?php echo htmlspecialchars($BEGIN.$_SERVER["HTTP_HOST"].$_SERVER["SCRIPT_NAME"]."?p=".$_GET['p']."&raw=true"); ?>" /></a><?php
             }
-            if (in_array(strtolower(substr($path,-4)),['.mp4','.mkv','.avi','webm']) && $showhidden === 1) {
-                ?><video controls width="100%" src="<?php echo htmlspecialchars($_SERVER["SCRIPT_NAME"]."?p=".$_GET['p']."&raw=true");?>" ></video><?php
-            }
             ?>
-    <a style="color: #<?php echo $drive_color[$drive]; ?>;" href="<?php echo $_SERVER["SCRIPT_NAME"]."?p=".urlencode($_GET['p'])."&raw=true"; ?>">Download</a><?php
+    <a style="color: #<?php echo $drive_color[$drive]; ?>;" href="<?php echo $_SERVER["SCRIPT_NAME"]."?drive=".urlencode($drive)."&p=".urlencode($_GET['p'])."&raw=true"; ?>">Download</a><?php
         }
     }
 } else {
