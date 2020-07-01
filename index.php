@@ -24,19 +24,48 @@
     </head>
     <body>
         <pre><code><?php include 'head.php'; ?>
+<img id="selfie" src="/selfie.php" width="100%"></img>
 <h1>What is OldPC?</h1>
 OldPC is 'Hewlett-Packard HP Pavilion 17 Notebook PC' connected over ethernet cable to the <a href="https://en.wikipedia.org/wiki/IP_over_Avian_Carriers">IPoAC</a> router that gives us connection to the internet that is almost twice as fast as standard dial-up internet!
 In addition to that, it has an non-water cooling system with "Fan Always On" techonogy (that is impossible to disable in Basic Input/Output System) which keep us on about 40 degrees! It's CPU is 'AMD A8-4500M APU with Radeon(tm) HD Graphics', also, if you choose to use OldPC as your hosting provider, you will get:
     > Random reboots
     > Unstable and slow network connection
     > Closed ports
-    > 600 GB of shared HDD storage
-    > 8 GB of RAM
+    > 1600 <strike>600</strike> GB of shared HDD storage
+    > 7 <strike>8</strike> GB of RAM
     > Access to camera, on which you can see the router, which is on my attic
     > KVM based virtualization, with os of your choice
     > No warranty of any kind.
 <hr />
 No, this is not a joke. Feel free to grab OldPC source from git and setup your own server.
 </code></pre>
+    <script>
+    var nextid = 0;
+    function prefetchNext() {
+        nextid++;
+        url = "/selfie.php?id="+nextid;
+        var req = new XMLHttpRequest();
+        req.open('GET', url, true);
+        req.responseType = 'blob';
+        image = document.getElementById('selfie');
+        req.onload = function() {
+            if (this.status === 200) {
+                var imageBlob = this.response;
+                img = URL.createObjectURL(imageBlob); // IE10+
+                // Video is now downloaded
+                // and we can set it as source on the video element
+                image.src = img
+            }
+        }
+        req.onerror = function() {
+            //alert("An error occured, refreshing page");
+            window.location.href = "/";
+        }
+        req.send();
+    }
+    setInterval(() => {
+        prefetchNext();
+    }, 10 * 1000)
+    </script>
     </body>
 </html>
