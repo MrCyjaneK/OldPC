@@ -1,15 +1,43 @@
 <?php
 $inc = true;
+
+// CHECK IF WE ARE IN GIT REPO ROOT DIR
+
+//todo
+
+// END OF GIT REPO ROOT DIR PATH CHECK.
+
 session_name('oldpc_files');
 session_start();
+
+// Check if user have made download requests or decided to view a file
+// This is antispam.
 if (empty($_SESSION['current_tries']) && empty($_SESSION['v'])) {
     $_SESSION['current_tries'] = 9999;
     $_SESSION['v'] = true;
 }
+
+// Allowed filenames "Ściema<jakaś>" -> "?ciema?jaka??"
 $regex = "/[^a-zA-Z0-9_\- \.\/()]+/";
-//define('FM_ROOT_PATH','/opt/shared_files');
+
+// Default drive, shouldn't be all (Why?)
 $default = ':D';
+
+// Include drive's config
+//
+//$drives = [
+//    ':D' => '/opt/shared_files',
+//    ':3' => '/opt/shared_files/.drives/d2',
+//    'all' => 'all'
+//];
+//$drive_color = [
+//    ':D'  => '00ff00',
+//    ':3'  => '00ffff',
+//    'all' => 'ff0000'
+//];
 include 'drive_config.php';
+
+
 if (isset($_GET['drive'])) {
     $_COOKIE['drive'] = $_GET['drive'];
 }
@@ -18,10 +46,16 @@ if (isset($_COOKIE['drive']) && isset($drives[$_COOKIE['drive']])) {
 } else {
     $drive = 'all'; //$default;
 }
+
 define('FM_ROOT_PATH', $drives[$drive]);
 //set_time_limit(10);
-ignore_user_abort(true);
+//ignore_user_abort(true);
+
+// Don't show hidden files (.*
 $showhidden = 0;
+
+// Access control, allow everything from localhost and
+// rate-limit connections from outside
 if ((substr($_SERVER['REMOTE_ADDR'],0,8) == "192.168.")) {
     $showhidden = 1;
     define('MAX_SIZE', 1024 * 1024 * 1024 * 1024); // 1TB
@@ -30,182 +64,23 @@ if ((substr($_SERVER['REMOTE_ADDR'],0,8) == "192.168.")) {
     define('MAX_SIZE', 2048 * 1024 * 1024); // 2GB
     define('MAX_FILES_PER_CAPTCHA', 10); // 10 is ok.
 }
+
+
 define('SHOWHIDDEN', $showhidden);
+
 $BEGIN = 'http://';
 $path = $_GET['p'];
+
 if (!file_exists(FM_ROOT_PATH."$path")) {
+    //TODO: This should be static file in www directory... I think.
     $path = FM_ROOT_PATH.'/.404/readme.txt';
 } else {
     $path = FM_ROOT_PATH."$path";
 }
-try {
-    //$path = str_replace('//','/',$path);
-    //$path = realpath($path);
-    if (empty($path) && $drive != 'all' ) {
-        //$_GET['p'] = '/.404';
-        //$path = realpath(FM_ROOT_PATH.'/.404');
-        //header("Location: ".$_SERVER["SCRIPT_NAME"]."?p=/.404/");
-        die('emptykek');
-    }
-    //if (substr($path, strlen(FM_ROOT_PATH)) != $_GET['p'] &&
-    //    '/' != $_GET['p']) {
-    //    header("Location: ".$_SERVER["SCRIPT_NAME"]."?p=".substr($path, strlen(FM_ROOT_PATH)));
-    //    die($path);
-    //}
-} catch (Exception $e) {
-    header("Location: ".$_SERVER["SCRIPT_NAME"]."?p=/");
-    die('ouchhhh');
-}
-if ($_GET['raw'] && filesize($path) < MAX_SIZE && file_exists($path)) {
-    set_time_limit(0);
-    if ($_SESSION['current_tries'] >= MAX_FILES_PER_CAPTCHA && MAX_FILES_PER_CAPTCHA != -1) {
-        header("Location: ".$_SERVER["SCRIPT_NAME"]."?p=/".substr($path, strlen(FM_ROOT_PATH)).'&drive'.urlencode($drive));
-        die();
-    }
-    $_SESSION['current_tries'] += 1;
-    switch (strtolower(substr($path,-4))) {
-        case '.mp4':
-            $type = 'video/mp4';
-            break;
-        case 'webm':
-            $type = 'video/webm';
-            break;
-        default:
-            $type = 'application/octet-stream';
-            header('Content-Disposition: attachment; filename="' . basename($path) . '"');
-    }
-    $file = $path;
-    $fp = @fopen($file, 'rb');
-    $size = filesize($file); // File size
-    $length = $size;         // Content length
-    $start = 0;              // Start byte
-    $end = $size - 1;        // End byte
-    header('Content-type: '.$type);
-    header("Accept-Ranges: bytes");
-    if (isset($_SERVER['HTTP_RANGE'])) {
-        $c_start = $start;
-        $c_end = $end;
 
-        list(, $range) = explode('=', $_SERVER['HTTP_RANGE'], 2);
-        if (strpos($range, ',') !== false) {
-            header('HTTP/1.1 416 Requested Range Not Satisfiable');
-            header("Content-Range: bytes $start-$end/$size");
-            exit;
-        }
-        if ($range == '-') {
-            $c_start = $size - substr($range, 1);
-        } else {
-            $range = explode('-', $range);
-            $c_start = $range[0];
-            $c_end = (isset($range[1]) && is_numeric($range[1])) ? $range[1] : $size;
-        }
-        $c_end = ($c_end > $end) ? $end : $c_end;
-        if ($c_start > $c_end || $c_start > $size - 1 || $c_end >= $size) {
-            header('HTTP/1.1 416 Requested Range Not Satisfiable');
-            header("Content-Range: bytes $start-$end/$size");
-            exit;
-        }
-        $start = $c_start;
-        $end = $c_end;
-        $length = $end - $start + 1;
-        fseek($fp, $start);
-        header('HTTP/1.1 206 Partial Content');
-    }
-    header("Content-Range: bytes $start-$end/$size");
-    header("Content-Length: " . $length);
-    $buffer = 1024 * 8;
-    while (!feof($fp) && ($p = ftell($fp)) <= $end) {
-        if ($p + $buffer > $end) {
-            $buffer = $end - $p + 1;
-        }
-        set_time_limit(0);
-        if ($fp === false || $fp === true) exit;
-        echo fread($fp, $buffer);
-        flush();
-    }
-
-    fclose($fp);
-    exit();
-//    header('Content-Description: File Transfer');
-//    header('Content-Type: application/octet-stream');
-//    header('Content-Disposition: attachment; filename="' . basename($path) . '"');
-//    header('Content-Transfer-Encoding: binary');
-//    header('Connection: Keep-Alive');
-//    header('Expires: 0');
-//    header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
-//    header('Pragma: public');
-//    header('Content-Length: ' . filesize($path));
-//    ob_end_clean();
-//    readfile($path);
-//    exit;
-}
-
-function remove_dot_segments($path) {
-    //str_replace('//','/',$path);
-    $path = explode('/', $path);
-    $stack = array();
-    foreach ($path as $seg) {
-        if ($seg == '..') {
-            // Ignore this segment, remove last segment from stack
-            array_pop($stack);
-            continue;
-        }
-
-        if ($seg == '.') {
-            // Ignore this segment
-            continue;
-        }
-
-        $stack[] = $seg;
-    }
-
-    return implode('/', $stack);
-}
-
-function convert_filesize($bytes, $decimals = 2){
-    $size = array('B','kB','MB','GB','TB','PB','EB','ZB','YB');
-    $factor = floor((strlen($bytes) - 1) / 3);
-    return sprintf("%.{$decimals}f", $bytes / pow(1024, $factor)) . @$size[$factor];
-}
-function dcf($bytes) {
-    return convert_filesize($bytes,0);
-}
-function driveinfo($path) {
-    if ($path == 'all') return 'all drives';
-    return dcf(disk_total_space($path) - disk_free_space($path)).' of '.dcf(disk_total_space($path));
-}
-function scandirSorted($path,$c = 0) {
-    $sortedData = array();
-    foreach(scandir($path) as $file) {
-        if ($file === '.' || $file === '..') continue;
-        if (substr($file,0,1) === '.' && SHOWHIDDEN == 0) continue;
-        if(@is_file($path . $file)) {
-            // Add entry at the end of the array
-            array_push($sortedData, $file);
-        } else {
-            // Add entry at the begin of the array
-            array_unshift($sortedData, $file);
-        }
-    }
-    if ($c === 0 && $_GET['p'] != '' && $_GET['p'] != "/" && $_GET['p'] != '/.') {
-        array_unshift($sortedData, '..');
-    }
-    return $sortedData;
-}
-function folderSize ($dir) {
-	return filesize($dir);
-	//return explode("/", shell_exec("du -s \"$dir\""))[0];
-	if (is_file($dir)) return filesize($dir);
-	if (substr($dir, -3,2) === "/.") return 4096;
-    $size = 0;
-
-    foreach (scandir($dir) as $key => $each) {
-    	if ($key === 0 || $key === 1) continue;
-        $size += folderSize($dir.'/'.$each);
-    }
-
-    return $size;
-}
+// Send raw file
+include './send_raw.php'
+inclide './functions.php'
 ?>
 
 <html>
