@@ -1,4 +1,5 @@
 <?php
+$inc = true;
 session_name('oldpc_files');
 session_start();
 if (empty($_SESSION['current_tries']) && empty($_SESSION['v'])) {
@@ -8,16 +9,7 @@ if (empty($_SESSION['current_tries']) && empty($_SESSION['v'])) {
 $regex = "/[^a-zA-Z0-9_\- \.\/()]+/";
 //define('FM_ROOT_PATH','/opt/shared_files');
 $default = ':D';
-$drives = [
-    ':D' => '/opt/shared_files',
-    ':3' => '/opt/shared_files/.drives/d2',
-    'all' => 'all'
-];
-$drive_color = [
-    ':D'  => '00ff00',
-    ':3'  => '00ffff',
-    'all' => 'ff0000'
-];
+include 'drive_config.php';
 if (isset($_GET['drive'])) {
     $_COOKIE['drive'] = $_GET['drive'];
 }
@@ -27,7 +19,7 @@ if (isset($_COOKIE['drive']) && isset($drives[$_COOKIE['drive']])) {
     $drive = 'all'; //$default;
 }
 define('FM_ROOT_PATH', $drives[$drive]);
-set_time_limit(0);
+//set_time_limit(10);
 ignore_user_abort(true);
 $showhidden = 0;
 if ((substr($_SERVER['REMOTE_ADDR'],0,8) == "192.168.")) {
@@ -36,7 +28,7 @@ if ((substr($_SERVER['REMOTE_ADDR'],0,8) == "192.168.")) {
     define('MAX_FILES_PER_CAPTCHA', -1); // Unlimited
 } else {
     define('MAX_SIZE', 2048 * 1024 * 1024); // 2GB
-    define('MAX_FILES_PER_CAPTCHA', 5); // 10 is ok.
+    define('MAX_FILES_PER_CAPTCHA', 10); // 10 is ok.
 }
 define('SHOWHIDDEN', $showhidden);
 $BEGIN = 'http://';
@@ -64,7 +56,8 @@ try {
     header("Location: ".$_SERVER["SCRIPT_NAME"]."?p=/");
     die('ouchhhh');
 }
-if ($_GET['raw'] && filesize($path) < MAX_SIZE) {
+if ($_GET['raw'] && filesize($path) < MAX_SIZE && file_exists($path)) {
+    set_time_limit(0);
     if ($_SESSION['current_tries'] >= MAX_FILES_PER_CAPTCHA && MAX_FILES_PER_CAPTCHA != -1) {
         header("Location: ".$_SERVER["SCRIPT_NAME"]."?p=/".substr($path, strlen(FM_ROOT_PATH)).'&drive'.urlencode($drive));
         die();
@@ -126,6 +119,7 @@ if ($_GET['raw'] && filesize($path) < MAX_SIZE) {
             $buffer = $end - $p + 1;
         }
         set_time_limit(0);
+        if ($fp === false || $fp === true) exit;
         echo fread($fp, $buffer);
         flush();
     }
@@ -225,6 +219,7 @@ function folderSize ($dir) {
             margin:20px 20px;
             font-family: Monospace;
             /* max-width:900px */
+            padding-bottom: 300px;
         }
         a {
             text-decoration: none;
@@ -241,14 +236,14 @@ function folderSize ($dir) {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>
     <body>
-        <code><pre>Drive: <b><?php echo $drive ?></b> | Switch: <?php
+        Drive: <b><?php echo $drive ?></b> | Switch: <?php
 $i = 0;
 foreach ($drives as $d => $dr) {
     if ($i != 0) echo " | ";
     $i++;
     ?><a style="color: #<?php echo $drive_color[$d]; ?>" href="<?php echo $_SERVER["SCRIPT_NAME"]."?drive=".urlencode($d)."&p=".urlencode($_GET['p']).""; ?>"><?php echo htmlspecialchars($d); ?></a> (<?php echo driveinfo($dr); ?>)<?php
 }
-?></pre></code>
+?>
         <hr />
         <?php
 if ($drive != 'all') {
@@ -300,11 +295,15 @@ if ($drive != 'all') {
                 strtolower(substr($path,-3)) === '.js'  ||
                 strtolower(substr($path,-4)) === '.css' ||
                 strtolower(substr($path,-4)) === '.php' ||
-                strtolower(substr($path,-5)) === '.html') {
+                strtolower(substr($path,-5)) === '.html'||
+                filesize($path) < 1024*1024*5) { //5mb
                 echo '<pre><code>'.htmlspecialchars(file_get_contents($path))."</code></pre><br />";
             }
+            if (in_array(strtolower(substr($path,-4)),['.mp4','.mkv','.avi','webm']) && $showhidden === 1) {
+                ?><video controls width="100%" src="<?php echo htmlspecialchars($_SERVER["SCRIPT_NAME"]."?p=".$_GET['p']."&raw=true&drive=".urlencode($drive)."");?>" ></video><?php
+            }
             if (in_array(strtolower(substr($path,-4)),['.png','.gif','.jpg','jpeg'])) {
-                ?><a href="<?php echo htmlspecialchars($_SERVER["SCRIPT_NAME"]."?p=".$_GET['p']."&raw=true"); ?>"><img width="100%" src="<?php echo htmlspecialchars($BEGIN.$_SERVER["HTTP_HOST"].$_SERVER["SCRIPT_NAME"]."?p=".$_GET['p']."&raw=true"); ?>" /></a><?php
+                ?><a href="<?php echo htmlspecialchars($_SERVER["SCRIPT_NAME"]."?raw=true&drive=".urlencode($drive)."&p=".$_GET['p']); ?>"><img width="100%" src="<?php echo htmlspecialchars($BEGIN.$_SERVER["HTTP_HOST"].$_SERVER["SCRIPT_NAME"]."?p=".$_GET['p']."&raw=true&drive=".urlencode($drive).""); ?>" /></a><?php
             }
             ?>
     <a style="color: #<?php echo $drive_color[$drive]; ?>;" href="<?php echo $_SERVER["SCRIPT_NAME"]."?drive=".urlencode($drive)."&p=".urlencode($_GET['p'])."&raw=true"; ?>">Download</a><?php
@@ -342,6 +341,7 @@ if ($drive != 'all') {
         }
     }
 }
+    include 'comments.php';
 ?>
     </body>
 </html>
