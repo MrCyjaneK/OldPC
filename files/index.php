@@ -216,7 +216,7 @@ if ($drive != 'all') {
         }
     }
 }
-    include 'comments.php';
+//    include 'comments.php';
 ?>
     </body>
 </html>
