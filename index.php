@@ -35,6 +35,7 @@ In addition to that, it has an non-water cooling system with "Fan Always On" tec
     > 7 <strike>8</strike> GB of RAM
     > Access to camera, on which you can see the router, which is on my attic
     > KVM based virtualization, with os of your choice
+    > Security provided by AMD Platform Security Processor
     > No warranty of any kind.
 <hr /><center><?php
 date_default_timezone_set('Europe/Warsaw');
