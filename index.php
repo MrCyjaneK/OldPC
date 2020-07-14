@@ -39,45 +39,6 @@ In addition to that, it has an non-water cooling system with "Fan Always On" tec
 &nbsp;&nbsp;&nbsp;&nbsp;> Security provided by AMD Platform Security Processor<br />
 &nbsp;&nbsp;&nbsp;&nbsp;> No warranty of any kind.<br />
 <hr />
-<center><code><pre><?php
-date_default_timezone_set('Europe/Warsaw');
-function createCalendar($startingDay, $days, $month) {
-    $spaces = '                        ';
-    $out = [];
-    $out[] = '------------------------'; // length is 24
-    $out[] = '| '.substr($month.$spaces,0,20).' |';
-    $out[] = '| s  m  t  w  t  f  s  |';
-    $calday = 0;
-    $day = $startingDay*-1+1;
-    while ($day <= $days) {
-        if ($day <= 0) {
-            $dtp = '   ';
-        } else {
-            $dtp = substr("$day   ",0,3);
-        }
-        if ($calday % 7 == 0) {
-            $out[] .= "| $dtp";
-        } else if ($calday % 7 == 6) {
-            $out[count($out)-1] .= "$dtp|";
-        } else {
-            $out[count($out)-1] .= $dtp;
-        }
-        $day++;
-        $calday++;
-    }
-
-    //$out[] = '------------------------';
-    while (strlen($out[count($out)-1]) < 23) {
-        echo "";
-        $out[count($out)-1] .= ' ';
-    }
-    $out[count($out)-1] .= '|';
-    $out[] = '------------------------';
-    return implode(PHP_EOL,$out);
-}
-echo str_replace(date('d'),'<b style="color: cyan">'.date('d')."</b>",createCalendar(date('w')+2,date("t"),date("F Y")));
-?></pre></code></center>
-<hr />
         No, this is not a joke. Feel free to grab OldPC source from git and setup your own server.
     <script>
     var nextid = 0;
