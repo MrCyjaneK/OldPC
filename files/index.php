@@ -51,7 +51,7 @@ define('FM_ROOT_PATH', $drives[$drive]);
 //set_time_limit(10);
 //ignore_user_abort(true);
 
-// Don't show hidden files (.*
+// Don't show hidden files (.*)
 $showhidden = 0;
 
 // Access control, allow everything from localhost and
@@ -79,8 +79,8 @@ if (!file_exists(FM_ROOT_PATH."$path")) {
 }
 
 // Send raw file
-include './send_raw.php'
-inclide './functions.php'
+include './send_raw.php';
+include './functions.php';
 ?>
 
 <html>
@@ -152,9 +152,9 @@ if ($drive != 'all') {
         // We are file lol
         if (filesize($path) > MAX_SIZE) {
             echo "I'm sorry, but ".htmlspecialchars(basename($path))." is too big, and cannot be displayed. It's size is ".convert_filesize(filesize($path))." and the limit is ".convert_filesize(MAX_SIZE).'.';
-        } else if ($_SESSION['current_tries'] >= MAX_FILES_PER_CAPTCHA && MAX_FILES_PER_CAPTCHA != -1) {
+        } else if ($_SESSION['current_tries'] >= MAX_FILES_PER_CAPTCHA && MAX_FILES_PER_CAPTCHA != -1 && filesize($path) > 1024*1024*15) {
             ?><img src="/files/captcha.php?session_name=oldpc_files" alt="Captcha"/>
-    <p>We all hate them, but I want only humans to be able to read my files</p>
+    <p>We all hate them, but I want only humans to be able to read my files, please type everything you se above in box below.</p>
     <form action="/files/verify.php" method="get">
         <input type="text" name="captcha" />
         <input type="hidden" name="p" value="<?php echo htmlspecialchars($_GET['p']); ?>" />
@@ -171,7 +171,7 @@ if ($drive != 'all') {
                 strtolower(substr($path,-4)) === '.css' ||
                 strtolower(substr($path,-4)) === '.php' ||
                 strtolower(substr($path,-5)) === '.html'||
-                filesize($path) < 1024*1024*5) { //5mb
+                filesize($path) < 1024*1024*15) { //5mb
                 echo '<pre><code>'.htmlspecialchars(file_get_contents($path))."</code></pre><br />";
             }
             if (in_array(strtolower(substr($path,-4)),['.mp4','.mkv','.avi','webm']) && $showhidden === 1) {
