@@ -1,6 +1,6 @@
 <?php
 if (!$inc) die('no');
-if ($_GET['raw'] && filesize($path) < MAX_SIZE && file_exists($path)) {
+if (isset($_GET['raw']) && filesize($path) < MAX_SIZE && file_exists($path)) {
     set_time_limit(0); 
     //TODO: Allow small files to be send without captcha.
     if ($_SESSION['current_tries'] >= MAX_FILES_PER_CAPTCHA && MAX_FILES_PER_CAPTCHA != -1) {
