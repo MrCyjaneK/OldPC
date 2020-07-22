@@ -23,7 +23,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>
     <body>
-        <pre><code>
+        <pre><code><?php include 'head.php'; ?>
 <h2>Temperature</h2>
 <?php echo str_replace("temp1:        "," - ",`sensors | grep " C " `); ?>
 <h2>Network</h2><?php
@@ -38,7 +38,7 @@
 $command_remove_all_png = "rm *aaa.png";
 $output = shell_exec("$command_remove_all_png");
 $vnstati_cmd = "/usr/bin/vnstati";
-$iface = "eno1";
+$iface = "tun0+eno1";
 $date = date("Y_m_d_h_i_sa");
 $extra = 'style="width:100%"';
 $image_sum_file_name = strval($date)."_sum_aaa.png";
@@ -63,7 +63,7 @@ $output = shell_exec("$command_month");
 echo "<details><summary>~~~~~~~~~~~~~ Monthly </summary><img $extra src='$image_month_file_name'/></details>";
 ?><h2>Uptime</h2>
 <table style="width: 100%;"><?php
-foreach (str_replace(" days", "d", str_replace(" hours", "h", str_replace(" minutes", "m", str_replace(" seconds", "s", str_replace("\t", "BREAK_HERE",str_replace("\t\t", "\t",explode("\n", file_get_contents('uptime')))))))) as $line) {
+foreach (str_replace(" days", "d", str_replace(" hours", "h", str_replace(" minutes", "m", str_replace(" seconds", "s", str_replace("\t", "BREAK_HERE",str_replace("\t\t", "\t",explode("\n", file_get_contents("uptime")))))))) as $line) {
     $line = preg_replace('/\s+/', ' ', $line);
     echo "<tr>";
     foreach (explode('BREAK_HERE', $line) as $word) {
@@ -73,12 +73,12 @@ foreach (str_replace(" days", "d", str_replace(" hours", "h", str_replace(" minu
 }
 ?></table>
 <h2>Disk</h2>
-<table style="width: 100%;"><?php foreach(explode("\n",`df / /opt/shared_files/.drives/d2 -h`) as $line) {
+<table style="width: 100%;"><?php foreach(explode("\n",`df / /opt/shared_files/ -h`) as $line) {
     $line = preg_replace('/\s+/', ' ', $line);
     echo "<tr>";
     $i = 0;
     foreach (explode(' ', $line) as $word) {
-        if ($i === 5) continue;
+        if ($i === 5) continue; // ignore 'mounted'
         if ($word === 'on') continue;
         echo "<td>".$word."</td>";
         $i++;
