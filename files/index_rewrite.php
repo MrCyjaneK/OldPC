@@ -180,8 +180,9 @@ if ($drive != 'all') {
     </form>
 <?php
         } else {
-           $_SESSION['current_tries'] += 0.1;
-             echo "<h2>".basename($path)."</h2>";
+            $_SESSION['current_tries'] += 0.1;
+            echo "<h2>".basename($path)."</h2>";
+            ?><a style="color: #<?php echo $drive_color[$drive]; ?>;width:100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; float: left;" href="/files/<?= $drive ?><?= remove_dot_segments($_GET['p']."/.."); ?>">close</a><?php
             if (strtolower(substr($path,-4)) === '.txt' ||
                 strtolower(substr($path,-3)) === '.sh'  ||
                 strtolower(substr($path,-3)) === '.js'  ||
@@ -212,7 +213,12 @@ if ($drive != 'all') {
         if (is_dir($path)) {
             foreach (['index.txt','readme.txt','note.txt','notes.txt','changelog.txt'] as $tocheck) {
                 if (file_exists($path."/$tocheck")) {
-                    ?><details open><summary><?php echo "~~~~~~~~~~~~~ $tocheck\n"; ?></summary><code><pre><?php echo htmlspecialchars(file_get_contents($path.'/'.$tocheck)); ?></pre></code></details><?php
+                    ?>
+                    <details open>
+                        <summary><?php echo "~~~~~~~~~~~~~ $tocheck\n"; ?></summary>
+                        <code><pre><?php echo htmlspecialchars(file_get_contents($path.'/'.$tocheck)); ?></pre></code>
+                    </details>
+                    <?php
                     $ign[] = $tocheck;
                 }
             }
@@ -226,8 +232,9 @@ if ($drive != 'all') {
                     $drivetouse = $d;
                 }
                 $ign[] = $dir;
-                ?><a style="color: #<?php echo $drive_color[$d]; ?>;width:100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; float: left;" href="/files/<?= $drivetouse ?><?= remove_dot_segments($_GET['p']."/$dir"); ?>"><?php echo htmlspecialchars(substr(convert_filesize(@folderSize($path.'/'.$dir)).'__________',0,10).'|'.preg_replace($regex, "?", $dird)); ?></a>
-<?php
+                ?>
+                <a style="color: #<?php echo $drive_color[$d]; ?>;width:100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; float: left;" href="/files/<?= $drivetouse ?><?= remove_dot_segments($_GET['p']."/$dir"); ?>"><?php echo htmlspecialchars(substr(convert_filesize(@folderSize($path.'/'.$dir)).'__________',0,10).'|'.preg_replace($regex, "?", $dird)); ?></a>
+                <?php
             }
             $c++;
         }
