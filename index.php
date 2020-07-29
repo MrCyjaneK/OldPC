@@ -25,21 +25,21 @@
     </head>
     <body>
         <?php include 'head.php'; ?>
-<img id="selfie" src="/selfie.php" width="100%"></img>
-<h1>What is OldPC?</h1>
-OldPC is 'Hewlett-Packard HP Pavilion 17 Notebook PC' connected over ethernet cable to the <a href="https://en.wikipedia.org/wiki/IP_over_Avian_Carriers">IPoAC</a> router that gives us connection to the internet that is almost twice as fast as standard dial-up internet!<br />
-In addition to that, it has an non-water cooling system with "Fan Always On" techonogy (that is impossible to disable in Basic Input/Output System) which keep us on about 40 degrees! It's CPU is 'AMD A8-4500M APU with Radeon(tm) HD Graphics', also, if you choose to use OldPC as your hosting provider, you will get:<br />
-&nbsp;&nbsp;&nbsp;&nbsp;> Random reboots<br />
-&nbsp;&nbsp;&nbsp;&nbsp;> Unstable and slow network connection<br />
-&nbsp;&nbsp;&nbsp;&nbsp;> Closed ports<br />
-&nbsp;&nbsp;&nbsp;&nbsp;> 1600 <strike>600</strike> GB of shared HDD storage<br />
-&nbsp;&nbsp;&nbsp;&nbsp;> 7 <strike>8</strike> GB of RAM<br />
-&nbsp;&nbsp;&nbsp;&nbsp;> Access to camera, on which you can see the router, which is on my attic<br />
-&nbsp;&nbsp;&nbsp;&nbsp;> KVM based virtualization, with os of your choice<br />
-&nbsp;&nbsp;&nbsp;&nbsp;> Security provided by AMD Platform Security Processor<br />
-&nbsp;&nbsp;&nbsp;&nbsp;> No warranty of any kind.<br />
-<hr />
-        No, this is not a joke. Feel free to grab OldPC source from git and setup your own server.
+        <img id="selfie" src="/selfie.php" width="100%"></img>
+        <h1>What is OldPC?</h1>
+        OldPC is 'Hewlett-Packard HP Pavilion 17 Notebook PC' connected over ethernet cable to the <a href="https://en.wikipedia.org/wiki/IP_over_Avian_Carriers">IPoAC</a> router that gives us connection to the internet that is almost twice as fast as standard dial-up internet!<br />
+        In addition to that, it has an non-water cooling system with "Fan Always On" techonogy (that is impossible to disable in Basic Input/Output System) which keep us on about 40 degrees! It's CPU is 'AMD A8-4500M APU with Radeon(tm) HD Graphics', also, if you choose to use OldPC as your hosting provider, you will get:<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;> Random reboots<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;> Unstable and slow network connection<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;> Closed ports<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;> 1600 <strike>600</strike> GB of shared HDD storage<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;> 7 <strike>8</strike> GB of RAM<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;> Access to camera, on which you can see the router, which is on my attic<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;> KVM based virtualization, with os of your choice<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;> Security provided by AMD Platform Security Processor<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;> No warranty of any kind.<br />
+        <hr />
+        No, this is not a joke. Feel free to grab OldPC source from <a href="/git/">git</a> and setup your own server, or <a href="/donate.php">donate</a>.
     <script>
     var nextid = 0;
     function prefetchNext() {
