@@ -25,48 +25,19 @@
     </head>
     <body>
         <?php include 'head.php'; ?>
-        <img id="selfie" src="/selfie.php" width="100%"></img>
-        <h1>What is OldPC?</h1>
-        OldPC is 'Hewlett-Packard HP Pavilion 17 Notebook PC' connected over ethernet cable to the <a href="https://en.wikipedia.org/wiki/IP_over_Avian_Carriers">IPoAC</a> router that gives us connection to the internet that is almost twice as fast as standard dial-up internet!<br />
-        In addition to that, it has an non-water cooling system with "Fan Always On" techonogy (that is impossible to disable in Basic Input/Output System) which keep us on about 40 degrees! It's CPU is 'AMD A8-4500M APU with Radeon(tm) HD Graphics', also, if you choose to use OldPC as your hosting provider, you will get:<br />
-        &nbsp;&nbsp;&nbsp;&nbsp;> Random reboots<br />
-        &nbsp;&nbsp;&nbsp;&nbsp;> Unstable and slow network connection<br />
-        &nbsp;&nbsp;&nbsp;&nbsp;> Closed ports<br />
-        &nbsp;&nbsp;&nbsp;&nbsp;> 1600 <strike>600</strike> GB of shared HDD storage<br />
-        &nbsp;&nbsp;&nbsp;&nbsp;> 7 <strike>8</strike> GB of RAM<br />
-        &nbsp;&nbsp;&nbsp;&nbsp;> Access to camera, on which you can see the router, which is on my attic<br />
-        &nbsp;&nbsp;&nbsp;&nbsp;> KVM based virtualization, with os of your choice<br />
-        &nbsp;&nbsp;&nbsp;&nbsp;> Security provided by AMD Platform Security Processor<br />
-        &nbsp;&nbsp;&nbsp;&nbsp;> No warranty of any kind.<br />
+        <h1>Hello!</h1>
+        I guess that you have came here because you want something from <a href="/me.php">Czarek Nakamoto<a> or you came here to see that beautiful masterpiece called <a href="/oldpc.php">OldPC</a><br />
+        If that's not the case, and you think that this website isn't perfect, click Control and W on your keyboard at the same time, or check description of what can be found on OldPC.<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;> <a href="/files/">Confidential files</a><br />
+        &nbsp;&nbsp;&nbsp;&nbsp;> <a href="/blog">Interesting posts</a> <a href="/blog/rss.xml">[RSS]</a><br />
+        &nbsp;&nbsp;&nbsp;&nbsp;> <a href="/ci/">Jenkins, mostly ubuntu touch</a><br />
+        &nbsp;&nbsp;&nbsp;&nbsp;> <a href="/git/">Attic code vault</a><br />
+        &nbsp;&nbsp;&nbsp;&nbsp;> <a href="//peertube.mrcyjanek.net">PeerTube instance</a><br />
+        &nbsp;&nbsp;&nbsp;&nbsp;> <a href="/status.php">Cool graphs and numbers.</a><br />
+        &nbsp;&nbsp;&nbsp;&nbsp;> <a href="/donate.php">Beggin', beggin' youuuuu.</a><br />
+        &nbsp;&nbsp;&nbsp;&nbsp;> <a href="/me.php">Who is Czarek Nakamoto?</a><br />
+        &nbsp;&nbsp;&nbsp;&nbsp;> <a href="/oldpc.php">What is OldPC?</a><br />
         <hr />
         No, this is not a joke. Feel free to grab OldPC source from <a href="/git/">git</a> and setup your own server, or <a href="/donate.php">donate</a>.
-    <script>
-    var nextid = 0;
-    function prefetchNext() {
-        nextid++;
-        url = "/selfie.php?id="+nextid;
-        var req = new XMLHttpRequest();
-        req.open('GET', url, true);
-        req.responseType = 'blob';
-        image = document.getElementById('selfie');
-        req.onload = function() {
-            if (this.status === 200) {
-                var imageBlob = this.response;
-                img = URL.createObjectURL(imageBlob); // IE10+
-                // Video is now downloaded
-                // and we can set it as source on the video element
-                image.src = img
-            }
-        }
-        req.onerror = function() {
-            //alert("An error occured, refreshing page");
-            window.location.href = "/";
-        }
-        req.send();
-    }
-    setInterval(() => {
-        prefetchNext();
-    }, 10 * 1000)
-    </script>
     </body>
 </html>
