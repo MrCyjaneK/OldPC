@@ -26,7 +26,7 @@
     <body>
         <?php include 'head.php'; ?>
         <h1>Hello!</h1>
-        I guess that you have came here because you want something from <a href="/me.php">Czarek Nakamoto<a> or you came here to see that beautiful masterpiece called <a href="/oldpc.php">OldPC</a><br />
+        I guess that you have came here because you want something from <a href="/me.php">Czarek Nakamoto</a> or you came here to see that beautiful masterpiece called <a href="/oldpc.php">OldPC</a><br />
         If that's not the case, and you think that this website isn't perfect, click Control and W on your keyboard at the same time, or check description of what can be found on OldPC.<br />
         &nbsp;&nbsp;&nbsp;&nbsp;> <a href="/files/">Confidential files</a><br />
         &nbsp;&nbsp;&nbsp;&nbsp;> <a href="/blog">Interesting posts</a> <a href="/blog/rss.xml">[RSS]</a><br />
