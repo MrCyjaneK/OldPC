@@ -1,5 +1,22 @@
 <?php
+error_reporting(1);
+ini_set("display_errors", 1);
+ini_set('display_startup_errors',1);
+ini_set("html_errors", 1);
+error_reporting(E_ALL | E_STRICT | E_NOTICE);
+
 $inc = true;
+
+// legacy links support
+//if (isset($_GET['p'])) {
+//    include 'index.php';
+//    die();
+//}
+
+//nginx:
+//location /files/ {
+//    try_files /donotexistplz /files/index.php?ngp=$uri;
+//}
 
 session_name('oldpc_files');
 session_start();
@@ -10,13 +27,21 @@ if (empty($_SESSION['current_tries']) && empty($_SESSION['v'])) {
     $_SESSION['current_tries'] = 9999;
     $_SESSION['v'] = true;
 }
-
+$expl = explode('/', $_GET['ngp']);
+unset($expl[1]);
+if (substr($expl[2],0,4) == 'raw-') {
+    $_GET['raw'] = true;
+    $expl[2] = substr($expl[2],4);
+}
+$_GET['drive'] = $expl[2];
+unset($expl[2]);
+$_GET['p'] = implode("/",$expl);
+//var_dump($_GET);
 // Allowed filenames "Ściema<jakaś>" -> "?ciema?jaka??"
 $regex = "/[^a-zA-Z0-9_\- \.\/()]+/";
 
 // Default drive, shouldn't be all (Why?)
 $default = ':D';
-
 // Include drive's config
 //
 //$drives = [
@@ -53,6 +78,9 @@ $showhidden = 0;
 if ((substr($_SERVER['REMOTE_ADDR'],0,8) == "192.168.")) {
     $showhidden = 1;
     define('MAX_SIZE', 1024 * 1024 * 1024 * 1024); // 1TB
+    define('MAX_FILES_PER_CAPTCHA', -1); // Unlimited
+} else if (substr($_SERVER['REMOTE_ADDR'],0,5) == "127.0") {
+    define('MAX_SIZE', 1024 * 1024 * 1024 * 5); // 5GB
     define('MAX_FILES_PER_CAPTCHA', -1); // Unlimited
 } else {
     define('MAX_SIZE', 2048 * 1024 * 1024); // 2GB
@@ -110,7 +138,7 @@ $i = 0;
 foreach ($drives as $d => $dr) {
     if ($i != 0) echo " | ";
     $i++;
-    ?><a style="color: #<?php echo $drive_color[$d]; ?>" href="<?php echo $_SERVER["SCRIPT_NAME"]."?drive=".urlencode($d)."&p=".urlencode($_GET['p']).""; ?>"><?php echo htmlspecialchars($d); ?></a> (<?php echo driveinfo($dr); ?>)<?php
+    ?><a style="color: #<?php echo $drive_color[$d]; ?>" href="/files/<?= $d ?><?= $_GET['p'] ?>"><?php echo htmlspecialchars($d); ?></a> (<?php echo driveinfo($dr); ?>)<?php
 }
 ?>
         <hr />
@@ -126,20 +154,12 @@ if ($drive != 'all') {
         }
         foreach (scandirSorted($path) as $key => $dir) {
             if (in_array($dir,$ign)) continue;
-            try {
-                if (!@is_dir($path.'/'.$dir) && $key != 0 && false) {
-                    ?><a style="float: right;" href="<?php echo $_SERVER["SCRIPT_NAME"]."?raw=true&drive=".urlencode($drive)."&p=".urlencode(remove_dot_segments($_GET['p']."/$dir")).""; ?>">Download</a><?php
-                } else {
-                    ?><p style="float: right;"></p><?php
-                }
-            } catch (Exception $e) {
-            }
             if (@is_dir($path.'/'.$dir)) {
                 $dird = $dir.'/';
             } else {
                 $dird = $dir;
             }
-            ?><a style="color: #<?php echo $drive_color[$drive]; ?>;width:100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; float: left;" href="<?php echo $_SERVER["SCRIPT_NAME"]."?drive=".urlencode($drive)."&p=".urlencode(remove_dot_segments($_GET['p']."/$dir")); ?>"><?php echo htmlspecialchars(substr(convert_filesize(@folderSize($path.'/'.$dir)).'__________',0,10).'|'.preg_replace($regex, "?", $dird)); ?></a>
+            ?><a style="color: #<?php echo $drive_color[$drive]; ?>;width:100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; float: left;" href="/files/<?= $drive ?><?= remove_dot_segments($_GET['p']."/$dir"); ?>"><?php echo htmlspecialchars(substr(convert_filesize(@folderSize($path.'/'.$dir)).'__________',0,10).'|'.preg_replace($regex, "?", $dird)); ?></a>
 <?php
         }
     } else {
@@ -157,25 +177,26 @@ if ($drive != 'all') {
     </form>
 <?php
         } else {
-           $_SESSION['current_tries'] += 0.1;
-             echo "<h2>".basename($path)."</h2>";
+            $_SESSION['current_tries'] += 0.1;
+            echo "<h2>".basename($path)."</h2>";
+            ?><a style="color: #<?php echo $drive_color[$drive]; ?>;width:100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; float: left;" href="/files/<?= $drive ?><?= remove_dot_segments($_GET['p']."/.."); ?>">close</a><?php
             if (strtolower(substr($path,-4)) === '.txt' ||
                 strtolower(substr($path,-3)) === '.sh'  ||
                 strtolower(substr($path,-3)) === '.js'  ||
                 strtolower(substr($path,-4)) === '.css' ||
                 strtolower(substr($path,-4)) === '.php' ||
                 strtolower(substr($path,-5)) === '.html'||
-                filesize($path) < 1024*1024*15) { //5mb
+                filesize($path) < 1024*1024*15) { //15mb
                 echo '<pre><code>'.htmlspecialchars(file_get_contents($path))."</code></pre><br />";
             }
             if (in_array(strtolower(substr($path,-4)),['.mp4','.mkv','.avi','webm']) && $showhidden === 1) {
-                ?><video controls width="100%" src="<?php echo htmlspecialchars($_SERVER["SCRIPT_NAME"]."?p=".$_GET['p']."&raw=true&drive=".urlencode($drive)."");?>" ></video><?php
+                ?><video controls width="100%" src="/files/raw-<?= $drive ?><?= $_GET['p'] ?>" ></video><?php
             }
             if (in_array(strtolower(substr($path,-4)),['.png','.gif','.jpg','jpeg'])) {
-                ?><a href="<?php echo htmlspecialchars($_SERVER["SCRIPT_NAME"]."?raw=true&drive=".urlencode($drive)."&p=".$_GET['p']); ?>"><img width="100%" src="<?php echo htmlspecialchars($BEGIN.$_SERVER["HTTP_HOST"].$_SERVER["SCRIPT_NAME"]."?p=".$_GET['p']."&raw=true&drive=".urlencode($drive).""); ?>" /></a><?php
+                ?><a href="/files/raw-<?= $drive ?><?= $_GET['p'] ?>"><img width="100%" src="/files/raw-<?= $drive ?><?= $_GET['p'] ?>" /></a><?php
             }
             ?>
-    <a style="color: #<?php echo $drive_color[$drive]; ?>;" href="<?php echo $_SERVER["SCRIPT_NAME"]."?drive=".urlencode($drive)."&p=".urlencode($_GET['p'])."&raw=true"; ?>">Download</a><?php
+    <a style="color: #<?php echo $drive_color[$drive]; ?>;" href="/files/raw-<?= $drive ?><?= $_GET['p'] ?>">Download</a><?php
         }
     }
 } else {
@@ -189,7 +210,12 @@ if ($drive != 'all') {
         if (is_dir($path)) {
             foreach (['index.txt','readme.txt','note.txt','notes.txt','changelog.txt'] as $tocheck) {
                 if (file_exists($path."/$tocheck")) {
-                    ?><details open><summary><?php echo "~~~~~~~~~~~~~ $tocheck\n"; ?></summary><code><pre><?php echo htmlspecialchars(file_get_contents($path.'/'.$tocheck)); ?></pre></code></details><?php
+                    ?>
+                    <details open>
+                        <summary><?php echo "~~~~~~~~~~~~~ $tocheck\n"; ?></summary>
+                        <code><pre><?php echo htmlspecialchars(file_get_contents($path.'/'.$tocheck)); ?></pre></code>
+                    </details>
+                    <?php
                     $ign[] = $tocheck;
                 }
             }
@@ -203,8 +229,9 @@ if ($drive != 'all') {
                     $drivetouse = $d;
                 }
                 $ign[] = $dir;
-                ?><a style="color: #<?php echo $drive_color[$d]; ?>;width:100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; float: left;" href="<?php echo $_SERVER["SCRIPT_NAME"]."?drive=".urlencode($drivetouse)."&p=".urlencode(remove_dot_segments($_GET['p']."/$dir")); ?>"><?php echo htmlspecialchars(substr(convert_filesize(@folderSize($path.'/'.$dir)).'__________',0,10).'|'.preg_replace($regex, "?", $dird)); ?></a>
-<?php
+                ?>
+                <a style="color: #<?php echo $drive_color[$d]; ?>;width:100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; float: left;" href="/files/<?= $drivetouse ?><?= remove_dot_segments($_GET['p']."/$dir"); ?>"><?php echo htmlspecialchars(substr(convert_filesize(@folderSize($path.'/'.$dir)).'__________',0,10).'|'.preg_replace($regex, "?", $dird)); ?></a>
+                <?php
             }
             $c++;
         }
