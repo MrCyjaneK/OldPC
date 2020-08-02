@@ -3,7 +3,7 @@ if (!$inc) die('no');
 if (isset($_GET['raw']) && filesize($path) < MAX_SIZE && file_exists($path)) {
     set_time_limit(0);
     //TODO: Allow small files to be send without captcha.
-    if ($_SESSION['current_tries'] >= MAX_FILES_PER_CAPTCHA && MAX_FILES_PER_CAPTCHA != -1) {
+    if ($_SESSION['current_tries'] >= MAX_FILES_PER_CAPTCHA && MAX_FILES_PER_CAPTCHA != -1 && filesize($path) > 1024*1024*15) {
         var_dump($_SESSION);
         header("Location: /files/".$drive.$_GET['p']);
         die();
