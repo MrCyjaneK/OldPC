@@ -127,6 +127,8 @@ if (!file_exists(FM_ROOT_PATH."$path")) {
     $path = FM_ROOT_PATH."$path";
 }
 
+$visual_path = substr($path,strlen($drives[$default_drive]));
+
 // Send raw file
 include './send_raw.php';
 include './functions.php';
@@ -134,7 +136,7 @@ include './functions.php';
 
 <html>
     <head>
-        <title>OldPC - File Manager</title>
+        <title>Files - <?= $drive ?> - <?= $visual_path ?></title>
         <style>
         body {
             background-color: black;
