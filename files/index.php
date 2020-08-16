@@ -4,8 +4,8 @@ ini_set("display_errors", 1);
 ini_set('display_startup_errors',1);
 ini_set("html_errors", 1);
 error_reporting(E_ALL | E_STRICT | E_NOTICE);
-
 $inc = true;
+include './functions.php';
 
 // legacy links support
 //if (isset($_GET['p'])) {
@@ -129,37 +129,77 @@ if (!file_exists(FM_ROOT_PATH."$path")) {
 
 $visual_path = substr($path,strlen($drives[$default_drive]));
 
+
+// Generate $description
+$description = 'OldPC file manager';
+if ($drive != 'all') {
+    if (is_dir($path)) {
+        $description = basename($path)." is a directory located in $visual_path on $drive";
+    } else {
+        // We are file lol
+        $description = basename($path)."is a file located in $visual_path on $drive";
+        if (strtolower(substr($path,-4)) === '.txt' ||
+            strtolower(substr($path,-3)) === '.sh'  ||
+            strtolower(substr($path,-3)) === '.js'  ||
+            strtolower(substr($path,-4)) === '.css' ||
+            strtolower(substr($path,-4)) === '.php' ||
+            strtolower(substr($path,-5)) === '.html'||
+            filesize($path) < 1024*1024*15) { //15mb
+            $description = basename($path)." is a text file or a script located in $visual_path on $drive";
+        }
+        if (in_array(strtolower(substr($path,-4)),['.mp4','.mkv','.avi','webm']) && $showhidden === 1) {
+            $description = basename($path)." is a video file located in $visual_path on $drive";
+        }
+        if (in_array(strtolower(substr($path,-4)),['.png','.gif','.jpg','jpeg'])) {
+             $description = basename($path)." is an image file located in $visual_path on $drive";
+        }
+    }
+} else {
+    // All drives
+    $c = 0;
+    $ign = [];
+    foreach ($drives as $d => $p) {
+        if ($d == 'all') continue;
+        $path = $p.$_GET['p'];
+        if(@!file_exists($path)) continue;
+        if (is_dir($path)) {
+            foreach (scandirSorted($path, $c) as $key => $dir) {
+                if ($config['dontshow']) continue;
+                if (in_array($dir,$ign)) continue;
+                if (@is_dir($path.'/'.$dir)) {
+                    $drivetouse = 'all';
+                    $dird = $dir.'/';
+                } else {
+                    $dird = $dir;
+                    $drivetouse = $d;
+                }
+                $ign[] = $dir;
+            }
+            $c++;
+        }
+    }
+    $description = "There are $c files in $visual_path";
+}
 // Send raw file
 include './send_raw.php';
-include './functions.php';
 ?>
-
+<!DOCTYPE html>
 <html>
     <head>
         <title>Files - <?= $drive ?> - <?= $visual_path ?></title>
+        <title>mrcyjanek.net - The PC on my attic.</title>
+        <meta name="theme-color" content="#000000">
+        <link rel="stylesheet" href="/oldpc.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="description" content="<?= htmlspecialchars($description) ?>">
+        <meta name="robots" content="index, follow">
         <style>
         body {
-            background-color: black;
-            color: white;
-            font-size: 150%;
-            margin:20px 20px;
-            font-family: Monospace;
-            /* max-width:900px */
+            max-width:100%;
             padding-bottom: 300px;
         }
-        a {
-            text-decoration: none;
-            color: chartreuse;
-        }
-        pre {
-            white-space: pre-wrap;       /* Since CSS 2.1 */
-            white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
-            white-space: -pre-wrap;      /* Opera 4-6 */
-            white-space: -o-pre-wrap;    /* Opera 7 */
-            word-wrap: break-word;       /* Internet Explorer 5.5+ */
-        }
         </style>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>
     <body>
         Drive: <b><?php echo $drive ?></b> | Switch: <?php
