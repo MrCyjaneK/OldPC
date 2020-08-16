@@ -9,3 +9,4 @@ $drive_color = [
 //    ':3'  => '00ffff',
     'all' => 'ff0000'
 ];
+$default_drive = ':D';

@@ -57,6 +57,7 @@ $default = ':D';
 include 'drive_config.php';
 
 
+
 if (isset($_GET['drive'])) {
     $_COOKIE['drive'] = $_GET['drive'];
 }
@@ -70,6 +71,12 @@ define('FM_ROOT_PATH', $drives[$drive]);
 //set_time_limit(10);
 //ignore_user_abort(true);
 
+$config = [
+    "suicide" => false, // Set this to cleanly exit script.
+    "max_level" => "/opt/shared_files", // Don't go deeper than that. If you want to go deeper check r/im14andthisisdeep
+    "allow_comments" => false, // Don't allow comments by default
+    "dontshow" => false // Set this to lock access to directory, should be a string
+];
 // Don't show hidden files (.*)
 $showhidden = 0;
 
@@ -93,9 +100,29 @@ define('SHOWHIDDEN', $showhidden);
 $BEGIN = 'http://';
 $path = $_GET['p'];
 
+foreach (explode('/',$path) as $dir) {
+    $c_path[] = $dir;
+    $p = implode('/',$c_path);
+    if (substr($p, 0,strlen($config['max_level'])) == $config['max_level']) {
+        if (is_dir($p)) {
+            if (file_exists($p.'/.dirconf') && is_file($p.'/.dirconf')) {
+                foreach (explode("\n", file_get_contents($p.'/.dirconf') ) as $cline) {
+                    $carr = explode("=", $cline);
+                    if (isset($carr[1])) {
+                        $config[$carr[0]] = $carr[1];
+                    }
+                }
+            }
+        }
+    }
+}
+
 if (!file_exists(FM_ROOT_PATH."$path")) {
     //TODO: This should be static file in www directory... I think.
-    $path = FM_ROOT_PATH.'/.404/readme.txt';
+    http_response_code(404);
+    $drive = $default_drive;
+    //define('FM_ROOT_PATH', $drives[$drive]);
+    $path = $drives[$default_drive].'/.404/readme.txt';
 } else {
     $path = FM_ROOT_PATH."$path";
 }
@@ -153,6 +180,7 @@ if ($drive != 'all') {
             }
         }
         foreach (scandirSorted($path) as $key => $dir) {
+            if ($config['dontshow']) continue;
             if (in_array($dir,$ign)) continue;
             if (@is_dir($path.'/'.$dir)) {
                 $dird = $dir.'/';
@@ -220,6 +248,7 @@ if ($drive != 'all') {
                 }
             }
             foreach (scandirSorted($path, $c) as $key => $dir) {
+                if ($config['dontshow']) continue;
                 if (in_array($dir,$ign)) continue;
                 if (@is_dir($path.'/'.$dir)) {
                     $drivetouse = 'all';
@@ -238,6 +267,10 @@ if ($drive != 'all') {
     }
 }
 //    include 'comments.php';
+    if ($config['dontshow']) {
+        echo "You can't access this directory because of .dirconf rules.<br />";
+        echo htmlspecialchars($config['dontshow']);
+    };
 ?>
     </body>
 </html>
